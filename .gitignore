@@ -28,3 +28,6 @@ errorgen
 *.dat
 .vscode
 /build_assets
+TODO
+search_in_file.py
+main/config.json

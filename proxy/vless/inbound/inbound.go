@@ -13,7 +13,7 @@ import (
 	"time"
 	"unsafe"
 
-	goReality "github.com/xtls/reality"
+	goReality "github.com/LuckyLuke-a/reality"
 	"github.com/xtls/xray-core/common"
 	"github.com/xtls/xray-core/common/buf"
 	"github.com/xtls/xray-core/common/errors"
@@ -585,7 +585,7 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 		}
 
 		// default: clientWriter := bufferWriter
-		clientWriter := encoding.EncodeBodyAddons(bufferWriter, request, requestAddons, trafficState, ctx, segaroConfig)
+		clientWriter := encoding.EncodeBodyAddons(bufferWriter, request, requestAddons, trafficState, ctx, segaroConfig, connection)
 		multiBuffer, err1 := serverReader.ReadMultiBuffer()
 		if err1 != nil {
 			return err1 // ...
@@ -604,7 +604,7 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 		case vless.XRV:
 			err = encoding.XtlsWrite(serverReader, clientWriter, timer, connection, trafficState, nil, ctx)
 		case vless.XSV:
-			err = segaro.SegaroWrite(serverReader, clientWriter, timer, connection, segaroConfig)
+			err = segaro.SegaroWrite(serverReader, clientWriter, timer, connection, true, segaroConfig)
 		default:
 			// from serverReader.ReadMultiBuffer to clientWriter.WriteMultiBuffer
 			err = buf.Copy(serverReader, clientWriter, buf.UpdateActivity(timer))

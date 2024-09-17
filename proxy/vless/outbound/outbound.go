@@ -218,7 +218,7 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 		}
 
 		// default: serverWriter := bufferWriter
-		serverWriter := encoding.EncodeBodyAddons(bufferWriter, request, requestAddons, trafficState, ctx, segaroConfig)
+		serverWriter := encoding.EncodeBodyAddons(bufferWriter, request, requestAddons, trafficState, ctx, segaroConfig, conn)
 		if request.Command == protocol.RequestCommandMux && request.Port == 666 {
 			serverWriter = xudp.NewPacketWriter(serverWriter, target, xudp.GetGlobalID(ctx))
 		}
@@ -265,7 +265,7 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 				ctx1 := session.ContextWithInbound(ctx, nil) // TODO enable splice
 				err = encoding.XtlsWrite(clientReader, serverWriter, timer, conn, trafficState, ob, ctx1)
 			case vless.XSV:
-				err = segaro.SegaroWrite(clientReader, serverWriter, timer, conn, segaroConfig)
+				err = segaro.SegaroWrite(clientReader, serverWriter, timer, conn, false, segaroConfig)
 			}
 		} else {
 			// from clientReader.ReadMultiBuffer to serverWriter.WriteMultiBuffer

@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/xtls/reality"
+	"github.com/LuckyLuke-a/reality"
 	"github.com/xtls/xray-core/common/errors"
 	"github.com/xtls/xray-core/transport/internet"
 )
@@ -22,14 +22,17 @@ func (c *Config) GetREALITYConfig() *reality.Config {
 		Dest: c.Dest,
 		Xver: byte(c.Xver),
 
-		PrivateKey:   c.PrivateKey,
-		MinClientVer: c.MinClientVer,
-		MaxClientVer: c.MaxClientVer,
-		MaxTimeDiff:  time.Duration(c.MaxTimeDiff) * time.Millisecond,
-		SplitPacket:  c.SplitPacket,
-		RandPacket:   c.RandPacket,
-		PaddingSize:  c.PaddingSize,
-		SubChunkSize: c.SubchunkSize,
+		PrivateKey:            c.PrivateKey,
+		MinClientVer:          c.MinClientVer,
+		MaxClientVer:          c.MaxClientVer,
+		MaxTimeDiff:           time.Duration(c.MaxTimeDiff) * time.Millisecond,
+		SplitPacket:           c.SplitPacket,
+		ServerRandPacket:      c.ServerRandPacket,
+		ClientRandPacket:      c.ClientRandPacket,
+		ServerRandPacketCount: c.ServerRandPacketCount,
+		ClientRandPacketCount: c.ClientRandPacketCount,
+		PaddingSize:           c.PaddingSize,
+		SubChunkSize:          c.SubchunkSize,
 
 		NextProtos:             nil, // should be nil
 		SessionTicketsDisabled: true,

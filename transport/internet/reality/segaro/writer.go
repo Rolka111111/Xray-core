@@ -14,27 +14,31 @@ import (
 // SegaroWriter is used to write xtls-segaro-vision
 type SegaroWriter struct {
 	buf.Writer
-	trafficState      *proxy.TrafficState
-	segaroConfig      *SegaroConfig
-	initCall          bool
+	trafficState *proxy.TrafficState
+	segaroConfig *SegaroConfig
+	conn         net.Conn
+	initCall     bool
 }
 
-func NewSegaroWriter(writer buf.Writer, state *proxy.TrafficState, segaroConfig *SegaroConfig) *SegaroWriter {
+func NewSegaroWriter(writer buf.Writer, state *proxy.TrafficState, segaroConfig *SegaroConfig, conn net.Conn) *SegaroWriter {
 	return &SegaroWriter{
-		Writer:            writer,
-		trafficState:      state,
-		segaroConfig:      segaroConfig,
+		Writer:       writer,
+		trafficState: state,
+		segaroConfig: segaroConfig,
+		conn:         conn,
 	}
 }
 
 func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 	// The `if` section, only call onetime, at the first packet sent by client and server.
 	if !w.initCall {
-		minSplitSize, maxSplitSize := w.segaroConfig.GetSplitSize()
-		paddingSize, subChunkSize := int(w.segaroConfig.GetPaddingSize()), int(w.segaroConfig.GetSubChunkSize())
-
 		w.initCall = true
 		serverSide := false
+
+		minSplitSize, maxSplitSize := w.segaroConfig.GetSplitSize()
+		paddingSize := int(w.segaroConfig.GetPaddingSize())
+		subChunkSize := int(w.segaroConfig.GetSubChunkSize())
+
 		var cacheBuffer buf.MultiBuffer
 
 		writer, ok := w.Writer.(*buf.BufferedWriter)
@@ -53,6 +57,12 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 
 		if serverSide {
 			// Server side
+			minServerRandSize, maxServerRandSize := w.segaroConfig.GetServerRandPacketSize()
+			minServerRandCount, maxServerRandCount := w.segaroConfig.GetServerRandPacketCount()
+			authKey, clientTime, err := getRealityAuthkey(&w.conn, true)
+			if err != nil {
+				return err
+			}
 			for _, b := range mb {
 				if !isHandshakeMessage(b.BytesTo(3)) {
 					if err := w.Writer.WriteMultiBuffer(buf.MultiBuffer{b}); err != nil {
@@ -77,12 +87,16 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 				if err := w.Writer.WriteMultiBuffer(cacheBuffer); err != nil {
 					return err
 				}
+
+				if err := sendMultipleFakePacket(authKey, nil, &w.Writer, clientTime, minServerRandSize, maxServerRandSize, minServerRandCount, maxServerRandCount, false); err != nil {
+					return err
+				}
 			}
 		} else {
 			// Client side
 			for i, b := range mb {
 				if i == 0 {
-					if maxSplitSize == 0 || paddingSize == 0 || subChunkSize == 0{
+					if maxSplitSize == 0 || paddingSize == 0 || subChunkSize == 0 {
 						return errors.New("flow params can not be zero")
 					}
 					b.WriteAtBeginning(requestHeader)
@@ -112,15 +126,24 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 		}
 		cacheBuffer, mb = nil, nil
 		return nil
-	} else {
-		return w.Writer.WriteMultiBuffer(mb)
 	}
+	return w.Writer.WriteMultiBuffer(mb)
+
 }
 
 // SegaroWrite filter and write xtls-segaro-vision
-func SegaroWrite(reader buf.Reader, writer buf.Writer, timer signal.ActivityUpdater, conn net.Conn, segaroConfig *SegaroConfig) error {
+func SegaroWrite(reader buf.Reader, writer buf.Writer, timer signal.ActivityUpdater, conn net.Conn, fromInbound bool, segaroConfig *SegaroConfig) error {
 	minSplitSize, maxSplitSize := segaroConfig.GetSplitSize()
 	paddingSize, subChunkSize := int(segaroConfig.GetPaddingSize()), int(segaroConfig.GetSubChunkSize())
+
+	var minRandSize, maxRandSize, minRandCount, maxRandCount int
+	if fromInbound {
+		minRandSize, maxRandSize = segaroConfig.GetServerRandPacketSize()
+		minRandCount, maxRandCount = segaroConfig.GetServerRandPacketCount()
+	} else {
+		minRandSize, maxRandSize = segaroConfig.GetClientRandPacketSize()
+		minRandCount, maxRandCount = segaroConfig.GetClientRandPacketCount()
+	}
 
 	err := func() error {
 		for {
@@ -131,16 +154,24 @@ func SegaroWrite(reader buf.Reader, writer buf.Writer, timer signal.ActivityUpda
 					if isHandshakeMessage(b.BytesTo(3)) {
 						newBuff := segaroAddPadding(b, minSplitSize, maxSplitSize, paddingSize, subChunkSize)
 
+						authKey, clientTime, err := getRealityAuthkey(&conn, fromInbound)
+						if err != nil {
+							return err
+						}
+
 						// Add meta-data at the first of each chunk
 						for _, chunk := range newBuff {
 							chunk.WriteAtBeginning([]byte{byte(chunk.Len() >> 8), byte(chunk.Len())})
 						}
 						newBuff[0].WriteAtBeginning([]byte{byte(newBuff.Len() >> 8), byte(newBuff.Len())})
-
 						if err = writer.WriteMultiBuffer(newBuff); err != nil {
 							return err
 						}
-						newBuff, b = nil, nil
+
+						if err := sendMultipleFakePacket(authKey, nil, &writer, clientTime, minRandSize, maxRandSize, minRandCount, maxRandCount, false); err != nil {
+							return err
+						}
+
 					} else {
 						if err = writer.WriteMultiBuffer(buf.MultiBuffer{b}); err != nil {
 							return err
@@ -159,11 +190,4 @@ func SegaroWrite(reader buf.Reader, writer buf.Writer, timer signal.ActivityUpda
 		return err
 	}
 	return nil
-}
-
-func isHandshakeMessage(message []byte) bool {
-	if bytes.HasPrefix(message, proxy.TlsClientHandShakeStart) || bytes.HasPrefix(message, proxy.TlsServerHandShakeStart) || bytes.HasPrefix(message, proxy.TlsChangeCipherSpecStart){
-		return true
-	}
-	return false
 }

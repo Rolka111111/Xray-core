@@ -3,6 +3,7 @@ package encoding
 import (
 	"context"
 	"io"
+	"net"
 
 	"github.com/xtls/xray-core/common/buf"
 	"github.com/xtls/xray-core/common/errors"
@@ -62,7 +63,7 @@ func DecodeHeaderAddons(buffer *buf.Buffer, reader io.Reader) (*Addons, error) {
 }
 
 // EncodeBodyAddons returns a Writer that auto-encrypt content written by caller.
-func EncodeBodyAddons(writer io.Writer, request *protocol.RequestHeader, requestAddons *Addons, state *proxy.TrafficState, context context.Context, segaroConfig *segaro.SegaroConfig) buf.Writer {
+func EncodeBodyAddons(writer io.Writer, request *protocol.RequestHeader, requestAddons *Addons, state *proxy.TrafficState, context context.Context, segaroConfig *segaro.SegaroConfig, conn net.Conn) buf.Writer {
 	if request.Command == protocol.RequestCommandUDP {
 		return NewMultiLengthPacketWriter(writer.(buf.Writer))
 	}
@@ -71,7 +72,7 @@ func EncodeBodyAddons(writer io.Writer, request *protocol.RequestHeader, request
 	case vless.XRV:
 		w = proxy.NewVisionWriter(w, state, context)
 	case vless.XSV:
-		w = segaro.NewSegaroWriter(w, state, segaroConfig)
+		w = segaro.NewSegaroWriter(w, state, segaroConfig, conn)
 	}
 	return w
 }
