@@ -16,7 +16,7 @@ import (
 // Receive buffer, then convert it into multiple chunk with padding
 func segaroAddPadding(buffer *buf.Buffer, minSplitSize, maxSplitSize, paddingSize, subChunkSize int) buf.MultiBuffer {
 	var chunks buf.MultiBuffer
-	
+
 	for buffer.Len() > 0 {
 		chunkSize := int32(mathRand.Intn(maxSplitSize-minSplitSize+1) + minSplitSize)
 		if chunkSize > buffer.Len() {

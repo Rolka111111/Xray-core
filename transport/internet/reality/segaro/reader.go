@@ -34,8 +34,8 @@ func NewSegaroReader(reader buf.Reader, state *proxy.TrafficState) *SegaroReader
 
 // SegaroRead filter and read xtls-segaro-vision
 func SegaroRead(reader buf.Reader, writer buf.Writer, timer *signal.ActivityTimer, conn net.Conn, trafficState *proxy.TrafficState, fromInbound bool, segaroConfig *SegaroConfig, xsvCanContinue chan bool) error {
-	defer func(){
-		if xsvCanContinue != nil{
+	defer func() {
+		if xsvCanContinue != nil {
 			xsvCanContinue <- false
 		}
 	}()
@@ -50,12 +50,12 @@ func SegaroRead(reader buf.Reader, writer buf.Writer, timer *signal.ActivityTime
 	minServerRandCount, maxServerRandCount := segaroConfig.GetServerRandPacketCount()
 
 	minClientRandSize, maxClientRandSize := segaroConfig.GetClientRandPacketSize()
-	_, maxClientRandCount := segaroConfig.GetClientRandPacketCount()
+	minClientRandCount, maxClientRandCount := segaroConfig.GetClientRandPacketCount()
 
 	var minRandSize int
-	if fromInbound{
+	if fromInbound {
 		minRandSize = minClientRandSize
-	}else{
+	} else {
 		minRandSize = minServerRandSize
 	}
 
@@ -140,8 +140,8 @@ func SegaroRead(reader buf.Reader, writer buf.Writer, timer *signal.ActivityTime
 								}
 
 							} else {
-								if cacheMultiBuffer[0].Len() > 2{
-									if !(fromInbound && (maxClientRandCount == 0 || maxClientRandSize == 0)) &&isHandshakeMessage(cacheMultiBuffer[0].BytesTo(3)) {
+								if cacheMultiBuffer[0].Len() > 2 {
+									if !(fromInbound && (maxClientRandCount == 0 || maxClientRandSize == 0 || minClientRandCount == 0 || minClientRandSize == 0)) && isHandshakeMessage(cacheMultiBuffer[0].BytesTo(3)) {
 										recievedFakePacket = true
 										canDecrypt = false
 									}
