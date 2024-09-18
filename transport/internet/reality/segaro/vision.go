@@ -164,7 +164,7 @@ func GetPrivateField(v interface{}, fieldName string) (interface{}, error) {
 
 // Send the multiple fake packet
 func sendMultipleFakePacket(authKey []byte, useConn *net.Conn, useWriter *buf.Writer, clientTime *time.Time, minRandSize, maxRandSize, minRandCount, maxRandCount int, sendHeader bool) error {
-	if maxRandCount == 0 || maxRandSize == 0 {
+	if maxRandCount == 0 || maxRandSize == 0 || minRandCount == 0 || minRandSize == 0{
 		return nil
 	}
 	var fakePackets buf.MultiBuffer
@@ -222,6 +222,9 @@ func sendMultipleFakePacket(authKey []byte, useConn *net.Conn, useWriter *buf.Wr
 
 // isFakePacketsValid, checks the received fake packets is valid or not
 func isFakePacketsValid(multiBuff *buf.MultiBuffer, authKey []byte, clientTime *time.Time, minRandSize int) error {
+	if (*multiBuff).IsEmpty(){
+		return errors.New("fake packets can not be empty!")
+	}
 	fakePacketBuff := buf.New()
 	for counter, b := range *multiBuff {
 		fakePacketBuff.Clear()

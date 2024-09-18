@@ -49,7 +49,8 @@ func SegaroRead(reader buf.Reader, writer buf.Writer, timer *signal.ActivityTime
 	minServerRandSize, maxServerRandSize := segaroConfig.GetServerRandPacketSize()
 	minServerRandCount, maxServerRandCount := segaroConfig.GetServerRandPacketCount()
 
-	minClientRandSize, _ := segaroConfig.GetClientRandPacketSize()
+	minClientRandSize, maxClientRandSize := segaroConfig.GetClientRandPacketSize()
+	_, maxClientRandCount := segaroConfig.GetClientRandPacketCount()
 
 	var minRandSize int
 	if fromInbound{
@@ -140,7 +141,7 @@ func SegaroRead(reader buf.Reader, writer buf.Writer, timer *signal.ActivityTime
 
 							} else {
 								if cacheMultiBuffer[0].Len() > 2{
-									if isHandshakeMessage(cacheMultiBuffer[0].BytesTo(3)) {
+									if !(fromInbound && (maxClientRandCount == 0 || maxClientRandSize == 0)) &&isHandshakeMessage(cacheMultiBuffer[0].BytesTo(3)) {
 										recievedFakePacket = true
 										canDecrypt = false
 									}
