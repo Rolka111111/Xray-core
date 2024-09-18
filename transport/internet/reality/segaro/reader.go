@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"io"
 	"net"
+	"sync"
 
 	"github.com/xtls/xray-core/common/buf"
 	"github.com/xtls/xray-core/common/errors"
@@ -33,7 +34,7 @@ func NewSegaroReader(reader buf.Reader, state *proxy.TrafficState) *SegaroReader
 }
 
 // SegaroRead filter and read xtls-segaro-vision
-func SegaroRead(reader buf.Reader, writer buf.Writer, timer *signal.ActivityTimer, conn net.Conn, trafficState *proxy.TrafficState, fromInbound bool, segaroConfig *SegaroConfig) error {
+func SegaroRead(reader buf.Reader, writer buf.Writer, timer *signal.ActivityTimer, conn net.Conn, trafficState *proxy.TrafficState, fromInbound bool, segaroConfig *SegaroConfig, mutex *sync.Mutex) error {
 	authKey, clientTime, err := getRealityAuthkey(&conn, fromInbound)
 	if err != nil {
 		return err
@@ -114,6 +115,7 @@ func SegaroRead(reader buf.Reader, writer buf.Writer, timer *signal.ActivityTime
 							if err := sendMultipleFakePacket(authKey, &conn, nil, clientTime, minServerRandSize, maxServerRandSize, minServerRandCount, maxServerRandCount, true); err != nil {
 								return err
 							}
+							mutex.Unlock()
 						}
 					}
 

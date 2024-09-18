@@ -311,7 +311,7 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 		case vless.XRV:
 			err = encoding.XtlsRead(serverReader, clientWriter, timer, conn, input, rawInput, trafficState, ob, ctx)
 		case vless.XSV:
-			err = segaro.SegaroRead(serverReader, clientWriter, timer, conn, trafficState, false, segaroConfig)
+			err = segaro.SegaroRead(serverReader, clientWriter, timer, conn, trafficState, false, segaroConfig, nil)
 		default:
 			// from serverReader.ReadMultiBuffer to clientWriter.WriteMultiBuffer
 			err = buf.Copy(serverReader, clientWriter, buf.UpdateActivity(timer))
