@@ -64,7 +64,7 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 				return err
 			}
 			for _, b := range mb {
-				if !isHandshakeMessage(b.BytesTo(3)) {
+				if b.Len() > 2 && !isHandshakeMessage(b.BytesTo(3)) {
 					if err := w.Writer.WriteMultiBuffer(buf.MultiBuffer{b}); err != nil {
 						return err
 					}
@@ -151,7 +151,7 @@ func SegaroWrite(reader buf.Reader, writer buf.Writer, timer signal.ActivityUpda
 			if !buffer.IsEmpty() {
 				timer.Update()
 				for _, b := range buffer {
-					if isHandshakeMessage(b.BytesTo(3)) {
+					if b.Len() > 2 && isHandshakeMessage(b.BytesTo(3)) {
 						newBuff := segaroAddPadding(b, minSplitSize, maxSplitSize, paddingSize, subChunkSize)
 
 						authKey, clientTime, err := getRealityAuthkey(&conn, fromInbound)
