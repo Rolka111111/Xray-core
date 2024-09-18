@@ -10,7 +10,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 	"unsafe"
 
@@ -547,8 +546,7 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 	serverReader := link.Reader // .(*pipe.Reader)
 	serverWriter := link.Writer // .(*pipe.Writer)
 	trafficState := proxy.NewTrafficState(account.ID.Bytes())
-	xsvMutex := new(sync.Mutex)
-	xsvMutex.Lock()
+	xsvCanContinue := make(chan bool, 1)
 
 	postRequest := func() error {
 		defer timer.SetTimeout(sessionPolicy.Timeouts.DownlinkOnly)
@@ -566,7 +564,7 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 
 		case vless.XSV:
 			clientReader = segaro.NewSegaroReader(clientReader, trafficState)
-			err = segaro.SegaroRead(clientReader, serverWriter, timer, connection, trafficState, true, segaroConfig, xsvMutex)
+			err = segaro.SegaroRead(clientReader, serverWriter, timer, connection, trafficState, true, segaroConfig, xsvCanContinue)
 
 		default:
 			// from clientReader.ReadMultiBuffer to serverWriter.WriteMultiBuffer
@@ -596,10 +594,9 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 		}
 		switch requestAddons.Flow {
 		case vless.XSV:
-			// Wait until the SegaroRead proccess and sent fake packets
-			xsvMutex.Lock()
-			xsvMutex.Unlock()
-			xsvMutex = nil
+			if canContinue := <- xsvCanContinue; !canContinue{
+				return errors.New("close conn received from xsv.SegaroRead")
+			}
 		}
 		if err := clientWriter.WriteMultiBuffer(multiBuffer); err != nil {
 			return err // ...
