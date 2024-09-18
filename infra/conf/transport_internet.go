@@ -520,6 +520,14 @@ type REALITYConfig struct {
 	MaxTimeDiff  uint64          `json:"maxTimeDiff"`
 	ShortIds     []string        `json:"shortIds"`
 
+	ServerRandPacket      string `json:"serverRandPacket"`
+	ClientRandPacket      string `json:"clientRandPacket"`
+	ServerRandPacketCount string `json:"serverRandPacketCount"`
+	ClientRandPacketCount string `json:"clientRandPacketCount"`
+	SplitPacket           string `json:"splitPacket"`
+	PaddingSize           uint32 `json:"paddingSize"`
+	SubchunkSize          uint32 `json:"subchunkSize"`
+
 	Fingerprint string `json:"fingerprint"`
 	ServerName  string `json:"serverName"`
 	PublicKey   string `json:"publicKey"`
@@ -673,6 +681,128 @@ func (c *REALITYConfig) Build() (proto.Message, error) {
 		config.SpiderX = u.String()
 		config.ServerName = c.ServerName
 	}
+
+	if len(c.ServerRandPacketCount) != 0 || len(c.ClientRandPacketCount) != 0 || len(c.ClientRandPacket) != 0 || len(c.ServerRandPacket) != 0 || len(c.SplitPacket) != 0 || c.PaddingSize != 0 || c.SubchunkSize != 0 {
+		if strings.Contains(c.ServerRandPacket, "-") {
+			serverRandPacket := strings.Split(c.ServerRandPacket, "-")
+			if len(serverRandPacket) != 2 {
+				return nil, errors.New(`incorrect range of "serverRandPacket"`)
+			}
+			min, err := strconv.Atoi(serverRandPacket[0])
+			if err != nil {
+				return nil, errors.New(`incorrect range of "serverRandPacket" min value`)
+			}
+			max, err := strconv.Atoi(serverRandPacket[1])
+			if err != nil {
+				return nil, errors.New(`incorrect range of "serverRandPacket" max value`)
+			}
+			if min > max {
+				return nil, errors.New(`incorrect "serverRandPacket" min > max`)
+			}
+		} else {
+			if _, err := strconv.Atoi(c.ServerRandPacket); err != nil {
+				return nil, errors.New(`incorrect "serverRandPacket" value`)
+			}
+		}
+
+		if strings.Contains(c.ClientRandPacket, "-") {
+			clientRandPacket := strings.Split(c.ClientRandPacket, "-")
+			if len(clientRandPacket) != 2 {
+				return nil, errors.New(`incorrect range of "clientRandPacket"`)
+			}
+			min, err := strconv.Atoi(clientRandPacket[0])
+			if err != nil {
+				return nil, errors.New(`incorrect range of "clientRandPacket" min value`)
+			}
+			max, err := strconv.Atoi(clientRandPacket[1])
+			if err != nil {
+				return nil, errors.New(`incorrect range of "clientRandPacket" max value`)
+			}
+			if min > max {
+				return nil, errors.New(`incorrect "clientRandPacket" min > max`)
+			}
+		} else {
+			if _, err := strconv.Atoi(c.ClientRandPacket); err != nil {
+				return nil, errors.New(`incorrect "clientRandPacket" value`)
+			}
+		}
+
+		if strings.Contains(c.SplitPacket, "-") {
+			splitPacket := strings.Split(c.SplitPacket, "-")
+			if len(splitPacket) != 2 {
+				return nil, errors.New(`incorrect range of "splitPacket"`)
+			}
+			min, err := strconv.Atoi(splitPacket[0])
+			if err != nil {
+				return nil, errors.New(`incorrect range of "splitPacket" min value`)
+			}
+			max, err := strconv.Atoi(splitPacket[1])
+			if err != nil {
+				return nil, errors.New(`incorrect range of "splitPacket" max value`)
+			}
+			if min > max {
+				return nil, errors.New(`incorrect "splitPacket" min > max`)
+			}
+		} else {
+			if _, err := strconv.Atoi(c.SplitPacket); err != nil {
+				return nil, errors.New(`incorrect "splitPacket" value`)
+			}
+		}
+
+		if strings.Contains(c.ServerRandPacketCount, "-") {
+			serverRandPacketCount := strings.Split(c.ServerRandPacketCount, "-")
+			if len(serverRandPacketCount) != 2 {
+				return nil, errors.New(`incorrect range of "serverRandPacketCount"`)
+			}
+			min, err := strconv.Atoi(serverRandPacketCount[0])
+			if err != nil {
+				return nil, errors.New(`incorrect range of "serverRandPacketCount" min value`)
+			}
+			max, err := strconv.Atoi(serverRandPacketCount[1])
+			if err != nil {
+				return nil, errors.New(`incorrect range of "serverRandPacketCount" max value`)
+			}
+			if min > max {
+				return nil, errors.New(`incorrect "serverRandPacketCount" min > max`)
+			}
+		} else {
+			if _, err := strconv.Atoi(c.ServerRandPacketCount); err != nil {
+				return nil, errors.New(`incorrect "serverRandPacketCount" value`)
+			}
+		}
+
+		if strings.Contains(c.ClientRandPacketCount, "-") {
+			clientRandPacketCount := strings.Split(c.ClientRandPacketCount, "-")
+			if len(clientRandPacketCount) != 2 {
+				return nil, errors.New(`incorrect range of "clientRandPacketCount"`)
+			}
+			min, err := strconv.Atoi(clientRandPacketCount[0])
+			if err != nil {
+				return nil, errors.New(`incorrect range of "clientRandPacketCount" min value`)
+			}
+			max, err := strconv.Atoi(clientRandPacketCount[1])
+			if err != nil {
+				return nil, errors.New(`incorrect range of "clientRandPacketCount" max value`)
+			}
+			if min > max {
+				return nil, errors.New(`incorrect "clientRandPacketCount" min > max`)
+			}
+		} else {
+			if _, err := strconv.Atoi(c.ClientRandPacketCount); err != nil {
+				return nil, errors.New(`incorrect "clientRandPacketCount" value`)
+			}
+		}
+
+	}
+
+	config.ServerRandPacket = c.ServerRandPacket
+	config.ClientRandPacket = c.ClientRandPacket
+	config.ServerRandPacketCount = c.ServerRandPacketCount
+	config.ClientRandPacketCount = c.ClientRandPacketCount
+	config.SplitPacket = c.SplitPacket
+	config.PaddingSize = c.PaddingSize
+	config.SubchunkSize = c.SubchunkSize
+
 	return config, nil
 }
 

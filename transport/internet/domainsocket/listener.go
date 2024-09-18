@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	goreality "github.com/xtls/reality"
+	goreality "github.com/LuckyLuke-a/reality"
 	"github.com/xtls/xray-core/common"
 	"github.com/xtls/xray-core/common/errors"
 	"github.com/xtls/xray-core/common/net"
