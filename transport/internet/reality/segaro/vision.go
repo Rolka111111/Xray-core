@@ -16,6 +16,7 @@ import (
 	"github.com/xtls/xray-core/proxy"
 	"github.com/xtls/xray-core/transport/internet/grpc/encoding"
 	"github.com/xtls/xray-core/transport/internet/reality"
+	"github.com/xtls/xray-core/transport/internet/stat"
 
 	goReality "github.com/LuckyLuke-a/reality"
 )
@@ -249,6 +250,11 @@ func isHandshakeMessage(message []byte) bool {
 
 // getRealityAuthkey return the authKey and clientTime from conn (h2, grpc, tcp conn supported)
 func getRealityAuthkey(conn *net.Conn, fromInbound bool) (authKey []byte, clientTime *time.Time, err error) {
+	statConn, ok := (*conn).(*stat.CounterConnection)
+	if ok {
+		*conn = statConn.Connection
+	}
+
 	if fromInbound {
 		// tcp
 		realityConn, ok := (*conn).(*reality.Conn)
@@ -282,6 +288,11 @@ func getRealityAuthkey(conn *net.Conn, fromInbound bool) (authKey []byte, client
 // GetRealityServerConfig, returns the server config, (tcp, h2, grpc supported)
 func GetRealityServerConfig(conn *net.Conn) (config *goReality.Config, err error) {
 	var realityConf interface{}
+	statConn, ok := (*conn).(*stat.CounterConnection)
+	if ok {
+		*conn = statConn.Connection
+	}
+
 	serverConn, ok := (*conn).(*reality.Conn)
 	if ok {
 		realityConf = serverConn.Conn
