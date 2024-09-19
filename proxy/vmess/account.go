@@ -3,9 +3,9 @@ package vmess
 import (
 	"strings"
 
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/common/protocol"
-	"github.com/xtls/xray-core/common/uuid"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/protocol"
+	"github.com/luckyluke-a/xray-core/common/uuid"
 )
 
 // MemoryAccount is an in-memory form of VMess account.

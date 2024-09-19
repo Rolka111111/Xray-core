@@ -1,6 +1,6 @@
 package outbound
 
-//go:generate go run github.com/xtls/xray-core/common/errors/errorgen
+//go:generate go run github.com/luckyluke-a/xray-core/common/errors/errorgen
 
 import (
 	"bytes"
@@ -11,28 +11,28 @@ import (
 	"unsafe"
 
 	utls "github.com/refraction-networking/utls"
-	proxymanOutbound "github.com/xtls/xray-core/app/proxyman/outbound"
-	"github.com/xtls/xray-core/common"
-	"github.com/xtls/xray-core/common/buf"
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/common/net"
-	"github.com/xtls/xray-core/common/protocol"
-	"github.com/xtls/xray-core/common/retry"
-	"github.com/xtls/xray-core/common/session"
-	"github.com/xtls/xray-core/common/signal"
-	"github.com/xtls/xray-core/common/task"
-	"github.com/xtls/xray-core/common/xudp"
-	"github.com/xtls/xray-core/core"
-	"github.com/xtls/xray-core/features/policy"
-	"github.com/xtls/xray-core/proxy"
-	"github.com/xtls/xray-core/proxy/vless"
-	"github.com/xtls/xray-core/proxy/vless/encoding"
-	"github.com/xtls/xray-core/transport"
-	"github.com/xtls/xray-core/transport/internet"
-	"github.com/xtls/xray-core/transport/internet/reality"
-	"github.com/xtls/xray-core/transport/internet/reality/segaro"
-	"github.com/xtls/xray-core/transport/internet/stat"
-	"github.com/xtls/xray-core/transport/internet/tls"
+	proxymanOutbound "github.com/luckyluke-a/xray-core/app/proxyman/outbound"
+	"github.com/luckyluke-a/xray-core/common"
+	"github.com/luckyluke-a/xray-core/common/buf"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/net"
+	"github.com/luckyluke-a/xray-core/common/protocol"
+	"github.com/luckyluke-a/xray-core/common/retry"
+	"github.com/luckyluke-a/xray-core/common/session"
+	"github.com/luckyluke-a/xray-core/common/signal"
+	"github.com/luckyluke-a/xray-core/common/task"
+	"github.com/luckyluke-a/xray-core/common/xudp"
+	"github.com/luckyluke-a/xray-core/core"
+	"github.com/luckyluke-a/xray-core/features/policy"
+	"github.com/luckyluke-a/xray-core/proxy"
+	"github.com/luckyluke-a/xray-core/proxy/vless"
+	"github.com/luckyluke-a/xray-core/proxy/vless/encoding"
+	"github.com/luckyluke-a/xray-core/transport"
+	"github.com/luckyluke-a/xray-core/transport/internet"
+	"github.com/luckyluke-a/xray-core/transport/internet/reality"
+	"github.com/luckyluke-a/xray-core/transport/internet/reality/segaro"
+	"github.com/luckyluke-a/xray-core/transport/internet/stat"
+	"github.com/luckyluke-a/xray-core/transport/internet/tls"
 )
 
 func init() {

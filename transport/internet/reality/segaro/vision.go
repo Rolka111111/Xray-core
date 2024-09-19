@@ -11,12 +11,12 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/xtls/xray-core/common/buf"
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/proxy"
-	"github.com/xtls/xray-core/transport/internet/grpc/encoding"
-	"github.com/xtls/xray-core/transport/internet/reality"
-	"github.com/xtls/xray-core/transport/internet/stat"
+	"github.com/luckyluke-a/xray-core/common/buf"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/proxy"
+	"github.com/luckyluke-a/xray-core/transport/internet/grpc/encoding"
+	"github.com/luckyluke-a/xray-core/transport/internet/reality"
+	"github.com/luckyluke-a/xray-core/transport/internet/stat"
 
 	goReality "github.com/LuckyLuke-a/reality"
 )

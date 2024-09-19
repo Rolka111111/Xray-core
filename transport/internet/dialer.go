@@ -3,17 +3,17 @@ package internet
 import (
 	"context"
 
-	"github.com/xtls/xray-core/common"
-	"github.com/xtls/xray-core/common/dice"
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/common/net"
-	"github.com/xtls/xray-core/common/net/cnc"
-	"github.com/xtls/xray-core/common/session"
-	"github.com/xtls/xray-core/features/dns"
-	"github.com/xtls/xray-core/features/outbound"
-	"github.com/xtls/xray-core/transport"
-	"github.com/xtls/xray-core/transport/internet/stat"
-	"github.com/xtls/xray-core/transport/pipe"
+	"github.com/luckyluke-a/xray-core/common"
+	"github.com/luckyluke-a/xray-core/common/dice"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/net"
+	"github.com/luckyluke-a/xray-core/common/net/cnc"
+	"github.com/luckyluke-a/xray-core/common/session"
+	"github.com/luckyluke-a/xray-core/features/dns"
+	"github.com/luckyluke-a/xray-core/features/outbound"
+	"github.com/luckyluke-a/xray-core/transport"
+	"github.com/luckyluke-a/xray-core/transport/internet/stat"
+	"github.com/luckyluke-a/xray-core/transport/pipe"
 )
 
 // Dialer is the interface for dialing outbound connections.

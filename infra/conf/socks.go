@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/common/protocol"
-	"github.com/xtls/xray-core/common/serial"
-	"github.com/xtls/xray-core/proxy/socks"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/protocol"
+	"github.com/luckyluke-a/xray-core/common/serial"
+	"github.com/luckyluke-a/xray-core/proxy/socks"
 	"google.golang.org/protobuf/proto"
 )
 

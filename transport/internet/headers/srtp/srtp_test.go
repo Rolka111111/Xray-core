@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/xtls/xray-core/common"
-	"github.com/xtls/xray-core/common/buf"
-	. "github.com/xtls/xray-core/transport/internet/headers/srtp"
+	"github.com/luckyluke-a/xray-core/common"
+	"github.com/luckyluke-a/xray-core/common/buf"
+	. "github.com/luckyluke-a/xray-core/transport/internet/headers/srtp"
 )
 
 func TestSRTPWrite(t *testing.T) {

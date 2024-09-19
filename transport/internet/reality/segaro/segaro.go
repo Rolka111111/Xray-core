@@ -10,7 +10,7 @@ import (
 	mathRand "math/rand"
 	"time"
 
-	"github.com/xtls/xray-core/common/buf"
+	"github.com/luckyluke-a/xray-core/common/buf"
 )
 
 // Receive buffer, then convert it into multiple chunk with padding

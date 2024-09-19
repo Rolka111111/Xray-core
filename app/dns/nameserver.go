@@ -6,13 +6,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xtls/xray-core/app/router"
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/common/net"
-	"github.com/xtls/xray-core/common/strmatcher"
-	"github.com/xtls/xray-core/core"
-	"github.com/xtls/xray-core/features/dns"
-	"github.com/xtls/xray-core/features/routing"
+	"github.com/luckyluke-a/xray-core/app/router"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/net"
+	"github.com/luckyluke-a/xray-core/common/strmatcher"
+	"github.com/luckyluke-a/xray-core/core"
+	"github.com/luckyluke-a/xray-core/features/dns"
+	"github.com/luckyluke-a/xray-core/features/routing"
 )
 
 // Server is the interface for Name Server.

@@ -4,8 +4,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/xtls/xray-core/common"
-	"github.com/xtls/xray-core/transport/internet"
+	"github.com/luckyluke-a/xray-core/common"
+	"github.com/luckyluke-a/xray-core/transport/internet"
 )
 
 const protocolName = "grpc"

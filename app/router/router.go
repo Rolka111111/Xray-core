@@ -1,19 +1,19 @@
 package router
 
-//go:generate go run github.com/xtls/xray-core/common/errors/errorgen
+//go:generate go run github.com/luckyluke-a/xray-core/common/errors/errorgen
 
 import (
 	"context"
 	sync "sync"
 
-	"github.com/xtls/xray-core/common"
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/common/serial"
-	"github.com/xtls/xray-core/core"
-	"github.com/xtls/xray-core/features/dns"
-	"github.com/xtls/xray-core/features/outbound"
-	"github.com/xtls/xray-core/features/routing"
-	routing_dns "github.com/xtls/xray-core/features/routing/dns"
+	"github.com/luckyluke-a/xray-core/common"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/serial"
+	"github.com/luckyluke-a/xray-core/core"
+	"github.com/luckyluke-a/xray-core/features/dns"
+	"github.com/luckyluke-a/xray-core/features/outbound"
+	"github.com/luckyluke-a/xray-core/features/routing"
+	routing_dns "github.com/luckyluke-a/xray-core/features/routing/dns"
 )
 
 // Router is an implementation of routing.Router.

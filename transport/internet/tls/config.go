@@ -12,12 +12,12 @@ import (
 	"time"
 	"bytes"
 
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/common/net"
-	"github.com/xtls/xray-core/common/ocsp"
-	"github.com/xtls/xray-core/common/platform/filesystem"
-	"github.com/xtls/xray-core/common/protocol/tls/cert"
-	"github.com/xtls/xray-core/transport/internet"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/net"
+	"github.com/luckyluke-a/xray-core/common/ocsp"
+	"github.com/luckyluke-a/xray-core/common/platform/filesystem"
+	"github.com/luckyluke-a/xray-core/common/protocol/tls/cert"
+	"github.com/luckyluke-a/xray-core/transport/internet"
 )
 
 var globalSessionCache = tls.NewLRUClientSessionCache(128)

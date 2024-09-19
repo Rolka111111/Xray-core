@@ -1,6 +1,6 @@
 package inbound
 
-//go:generate go run github.com/xtls/xray-core/common/errors/errorgen
+//go:generate go run github.com/luckyluke-a/xray-core/common/errors/errorgen
 
 import (
 	"context"
@@ -9,23 +9,23 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xtls/xray-core/common"
-	"github.com/xtls/xray-core/common/buf"
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/common/log"
-	"github.com/xtls/xray-core/common/net"
-	"github.com/xtls/xray-core/common/protocol"
-	"github.com/xtls/xray-core/common/session"
-	"github.com/xtls/xray-core/common/signal"
-	"github.com/xtls/xray-core/common/task"
-	"github.com/xtls/xray-core/common/uuid"
-	"github.com/xtls/xray-core/core"
-	feature_inbound "github.com/xtls/xray-core/features/inbound"
-	"github.com/xtls/xray-core/features/policy"
-	"github.com/xtls/xray-core/features/routing"
-	"github.com/xtls/xray-core/proxy/vmess"
-	"github.com/xtls/xray-core/proxy/vmess/encoding"
-	"github.com/xtls/xray-core/transport/internet/stat"
+	"github.com/luckyluke-a/xray-core/common"
+	"github.com/luckyluke-a/xray-core/common/buf"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/log"
+	"github.com/luckyluke-a/xray-core/common/net"
+	"github.com/luckyluke-a/xray-core/common/protocol"
+	"github.com/luckyluke-a/xray-core/common/session"
+	"github.com/luckyluke-a/xray-core/common/signal"
+	"github.com/luckyluke-a/xray-core/common/task"
+	"github.com/luckyluke-a/xray-core/common/uuid"
+	"github.com/luckyluke-a/xray-core/core"
+	feature_inbound "github.com/luckyluke-a/xray-core/features/inbound"
+	"github.com/luckyluke-a/xray-core/features/policy"
+	"github.com/luckyluke-a/xray-core/features/routing"
+	"github.com/luckyluke-a/xray-core/proxy/vmess"
+	"github.com/luckyluke-a/xray-core/proxy/vmess/encoding"
+	"github.com/luckyluke-a/xray-core/transport/internet/stat"
 )
 
 type userByEmail struct {

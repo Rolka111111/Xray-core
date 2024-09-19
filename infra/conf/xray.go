@@ -9,14 +9,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/xtls/xray-core/app/dispatcher"
-	"github.com/xtls/xray-core/app/proxyman"
-	"github.com/xtls/xray-core/app/stats"
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/common/net"
-	"github.com/xtls/xray-core/common/serial"
-	core "github.com/xtls/xray-core/core"
-	"github.com/xtls/xray-core/transport/internet"
+	"github.com/luckyluke-a/xray-core/app/dispatcher"
+	"github.com/luckyluke-a/xray-core/app/proxyman"
+	"github.com/luckyluke-a/xray-core/app/stats"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/net"
+	"github.com/luckyluke-a/xray-core/common/serial"
+	core "github.com/luckyluke-a/xray-core/core"
+	"github.com/luckyluke-a/xray-core/transport/internet"
 )
 
 var (

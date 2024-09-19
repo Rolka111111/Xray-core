@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/xtls/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/errors"
 )
 
 // in older versions of splithttp, the server would respond with `ok` to flush

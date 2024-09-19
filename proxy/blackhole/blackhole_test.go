@@ -4,13 +4,13 @@ import (
 	"context"
 	"testing"
 
-	"github.com/xtls/xray-core/common"
-	"github.com/xtls/xray-core/common/buf"
-	"github.com/xtls/xray-core/common/serial"
-	"github.com/xtls/xray-core/common/session"
-	"github.com/xtls/xray-core/proxy/blackhole"
-	"github.com/xtls/xray-core/transport"
-	"github.com/xtls/xray-core/transport/pipe"
+	"github.com/luckyluke-a/xray-core/common"
+	"github.com/luckyluke-a/xray-core/common/buf"
+	"github.com/luckyluke-a/xray-core/common/serial"
+	"github.com/luckyluke-a/xray-core/common/session"
+	"github.com/luckyluke-a/xray-core/proxy/blackhole"
+	"github.com/luckyluke-a/xray-core/transport"
+	"github.com/luckyluke-a/xray-core/transport/pipe"
 )
 
 func TestBlackholeHTTPResponse(t *testing.T) {

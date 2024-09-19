@@ -5,12 +5,12 @@ import (
 	"io"
 	"net"
 
-	"github.com/xtls/xray-core/common/buf"
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/common/protocol"
-	"github.com/xtls/xray-core/proxy"
-	"github.com/xtls/xray-core/proxy/vless"
-	"github.com/xtls/xray-core/transport/internet/reality/segaro"
+	"github.com/luckyluke-a/xray-core/common/buf"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/protocol"
+	"github.com/luckyluke-a/xray-core/proxy"
+	"github.com/luckyluke-a/xray-core/proxy/vless"
+	"github.com/luckyluke-a/xray-core/transport/internet/reality/segaro"
 	"google.golang.org/protobuf/proto"
 )
 

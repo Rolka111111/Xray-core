@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/xtls/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/errors"
 )
 
 type weightScaler func(value, weight float64) float64

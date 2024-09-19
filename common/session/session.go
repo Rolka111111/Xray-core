@@ -1,15 +1,15 @@
 // Package session provides functions for sessions of incoming requests.
-package session // import "github.com/xtls/xray-core/common/session"
+package session // import "github.com/luckyluke-a/xray-core/common/session"
 
 import (
 	"context"
 	"math/rand"
 
-	c "github.com/xtls/xray-core/common/ctx"
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/common/net"
-	"github.com/xtls/xray-core/common/protocol"
-	"github.com/xtls/xray-core/common/signal"
+	c "github.com/luckyluke-a/xray-core/common/ctx"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/net"
+	"github.com/luckyluke-a/xray-core/common/protocol"
+	"github.com/luckyluke-a/xray-core/common/signal"
 )
 
 // NewID generates a new ID. The generated ID is high likely to be unique, but not cryptographically secure.

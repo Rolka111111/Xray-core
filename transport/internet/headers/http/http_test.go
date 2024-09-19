@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xtls/xray-core/common"
-	"github.com/xtls/xray-core/common/buf"
-	"github.com/xtls/xray-core/common/net"
-	. "github.com/xtls/xray-core/transport/internet/headers/http"
+	"github.com/luckyluke-a/xray-core/common"
+	"github.com/luckyluke-a/xray-core/common/buf"
+	"github.com/luckyluke-a/xray-core/common/net"
+	. "github.com/luckyluke-a/xray-core/transport/internet/headers/http"
 )
 
 func TestReaderWriter(t *testing.T) {

@@ -3,9 +3,9 @@ package conf
 import (
 	"google.golang.org/protobuf/proto"
 	
-	"github.com/xtls/xray-core/app/router"
-	"github.com/xtls/xray-core/app/observatory/burst"
-	"github.com/xtls/xray-core/infra/conf/cfgcommon/duration"
+	"github.com/luckyluke-a/xray-core/app/router"
+	"github.com/luckyluke-a/xray-core/app/observatory/burst"
+	"github.com/luckyluke-a/xray-core/infra/conf/cfgcommon/duration"
 )
 
 const (

@@ -6,13 +6,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/xtls/xray-core/app/dns"
-	"github.com/xtls/xray-core/app/router"
-	"github.com/xtls/xray-core/common"
-	"github.com/xtls/xray-core/common/net"
-	"github.com/xtls/xray-core/common/platform"
-	"github.com/xtls/xray-core/common/platform/filesystem"
-	. "github.com/xtls/xray-core/infra/conf"
+	"github.com/luckyluke-a/xray-core/app/dns"
+	"github.com/luckyluke-a/xray-core/app/router"
+	"github.com/luckyluke-a/xray-core/common"
+	"github.com/luckyluke-a/xray-core/common/net"
+	"github.com/luckyluke-a/xray-core/common/platform"
+	"github.com/luckyluke-a/xray-core/common/platform/filesystem"
+	. "github.com/luckyluke-a/xray-core/infra/conf"
 	"google.golang.org/protobuf/proto"
 )
 

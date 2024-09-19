@@ -8,8 +8,8 @@ import (
 
 	"github.com/OmarTariq612/goech"
 	"github.com/cloudflare/circl/hpke"
-	"github.com/xtls/xray-core/common"
-	"github.com/xtls/xray-core/main/commands/base"
+	"github.com/luckyluke-a/xray-core/common"
+	"github.com/luckyluke-a/xray-core/main/commands/base"
 )
 
 var cmdECH = &base.Command{

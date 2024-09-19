@@ -1,10 +1,10 @@
 package conf
 
 import (
-	"github.com/xtls/xray-core/common/errors"
-	"github.com/xtls/xray-core/common/serial"
-	"github.com/xtls/xray-core/transport/global"
-	"github.com/xtls/xray-core/transport/internet"
+	"github.com/luckyluke-a/xray-core/common/errors"
+	"github.com/luckyluke-a/xray-core/common/serial"
+	"github.com/luckyluke-a/xray-core/transport/global"
+	"github.com/luckyluke-a/xray-core/transport/internet"
 )
 
 type TransportConfig struct {
