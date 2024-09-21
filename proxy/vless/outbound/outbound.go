@@ -127,6 +127,7 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 	var segaroConfig *segaro.SegaroConfig
 	var input *bytes.Reader
 	var rawInput *bytes.Buffer
+	var xsvCanContinue chan bool
 	allowUDP443 := false
 	switch requestAddons.Flow {
 	case vless.XRV + "-udp443":
@@ -181,6 +182,8 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 			return errors.New("failed to get reality ConfigFromStreamSettings")
 		}
 		segaroConfig = &segaro.SegaroConfig{RealityConfig: realityConfig}
+		xsvCanContinue = make(chan bool, 1)
+
 	default:
 		ob.CanSpliceCopy = 3
 	}
@@ -265,7 +268,7 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 				ctx1 := session.ContextWithInbound(ctx, nil) // TODO enable splice
 				err = encoding.XtlsWrite(clientReader, serverWriter, timer, conn, trafficState, ob, ctx1)
 			case vless.XSV:
-				err = segaro.SegaroWrite(clientReader, serverWriter, timer, conn, false, segaroConfig)
+				err = segaro.SegaroWrite(clientReader, serverWriter, timer, conn, false, segaroConfig, xsvCanContinue)
 			}
 		} else {
 			// from clientReader.ReadMultiBuffer to serverWriter.WriteMultiBuffer
@@ -311,7 +314,7 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 		case vless.XRV:
 			err = encoding.XtlsRead(serverReader, clientWriter, timer, conn, input, rawInput, trafficState, ob, ctx)
 		case vless.XSV:
-			err = segaro.SegaroRead(serverReader, clientWriter, timer, conn, trafficState, false, segaroConfig, nil)
+			err = segaro.SegaroRead(serverReader, clientWriter, timer, conn, trafficState, false, segaroConfig, xsvCanContinue)
 		default:
 			// from serverReader.ReadMultiBuffer to clientWriter.WriteMultiBuffer
 			err = buf.Copy(serverReader, clientWriter, buf.UpdateActivity(timer))

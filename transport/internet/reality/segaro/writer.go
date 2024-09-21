@@ -94,33 +94,43 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 			}
 		} else {
 			// Client side
+			if maxSplitSize == 0 || paddingSize == 0 || subChunkSize == 0 {
+				return errors.New("flow params can not be zero")
+			}
 			for i, b := range mb {
-				if i == 0 {
-					if maxSplitSize == 0 || paddingSize == 0 || subChunkSize == 0 {
-						return errors.New("flow params can not be zero")
+				if i == 0 || (b.Len() > 2 && isHandshakeMessage(b.BytesTo(3))) {
+					newTempBuff := []byte{}
+					if i == 0 {
+						// Add requestHeader
+						newTempBuff = append(newTempBuff, byte(len(requestHeader)>>8), byte(len(requestHeader)))
+						newTempBuff = append(newTempBuff, requestHeader...)
 					}
-					b.WriteAtBeginning(requestHeader)
-					b.WriteAtBeginning([]byte{byte(len(requestHeader) >> 8), byte(len(requestHeader))})
-				}
-				cacheBuffer = segaroAddPadding(b, minSplitSize, maxSplitSize, paddingSize, subChunkSize)
 
-				// Add meta-data at the first of each chunk
-				for _, chunk := range cacheBuffer {
-					chunk.WriteAtBeginning([]byte{byte(chunk.Len() >> 8), byte(chunk.Len())})
-				}
-				cacheBuffer[0].WriteAtBeginning([]byte{byte(cacheBuffer.Len() >> 8), byte(cacheBuffer.Len())})
+					newTempBuff = append(newTempBuff, b.Bytes()...)
+					b = buf.FromBytes(newTempBuff)
+					newTempBuff = nil
 
-				if len(w.trafficState.CacheBuffer) > 0 {
-					w.trafficState.CacheBuffer = append(w.trafficState.CacheBuffer, cacheBuffer)
+					cacheBuffer = segaroAddPadding(b, minSplitSize, maxSplitSize, paddingSize, subChunkSize)
+
+					// Add meta-data at the first of each chunk
+					for _, chunk := range cacheBuffer {
+						chunk.WriteAtBeginning([]byte{byte(chunk.Len() >> 8), byte(chunk.Len())})
+					}
+					cacheBuffer[0].WriteAtBeginning([]byte{byte(cacheBuffer.Len() >> 8), byte(cacheBuffer.Len())})
 				} else {
+					cacheBuffer = buf.MultiBuffer{b}
+				}
+
+				if i == 0{
 					if err := w.Writer.WriteMultiBuffer(buf.MultiBuffer{cacheBuffer[0]}); err != nil {
 						return err
 					}
-					// Add other chunks to cacheBuffer, if exist
 					cacheBuffer = cacheBuffer[1:]
-					if len(cacheBuffer) > 0 {
-						w.trafficState.CacheBuffer = append(w.trafficState.CacheBuffer, cacheBuffer)
-					}
+				}
+				
+				// Add other chunks to cacheBuffer, if exist
+				if len(cacheBuffer) > 0 {
+					w.trafficState.CacheBuffer = append(w.trafficState.CacheBuffer, cacheBuffer)
 				}
 			}
 		}
@@ -132,7 +142,12 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 }
 
 // SegaroWrite filter and write xtls-segaro-vision
-func SegaroWrite(reader buf.Reader, writer buf.Writer, timer signal.ActivityUpdater, conn net.Conn, fromInbound bool, segaroConfig *SegaroConfig) error {
+func SegaroWrite(reader buf.Reader, writer buf.Writer, timer signal.ActivityUpdater, conn net.Conn, fromInbound bool, segaroConfig *SegaroConfig, xsvCanContinue chan bool) error {
+	if xsvCanContinue != nil {
+		if canContinue := <-xsvCanContinue; !canContinue {
+			return errors.New("close conn received from xsv.SegaroWrite")
+		}
+	}
 	minSplitSize, maxSplitSize := segaroConfig.GetSplitSize()
 	paddingSize, subChunkSize := int(segaroConfig.GetPaddingSize()), int(segaroConfig.GetSubChunkSize())
 

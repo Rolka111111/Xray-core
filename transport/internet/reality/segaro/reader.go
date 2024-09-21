@@ -35,9 +35,7 @@ func NewSegaroReader(reader buf.Reader, state *proxy.TrafficState) *SegaroReader
 // SegaroRead filter and read xtls-segaro-vision
 func SegaroRead(reader buf.Reader, writer buf.Writer, timer *signal.ActivityTimer, conn net.Conn, trafficState *proxy.TrafficState, fromInbound bool, segaroConfig *SegaroConfig, xsvCanContinue chan bool) error {
 	defer func() {
-		if xsvCanContinue != nil {
-			xsvCanContinue <- false
-		}
+		xsvCanContinue <- false
 	}()
 
 	authKey, clientTime, err := getRealityAuthkey(&conn, fromInbound)
@@ -103,6 +101,7 @@ func SegaroRead(reader buf.Reader, writer buf.Writer, timer *signal.ActivityTime
 									}
 								}
 								trafficState.CacheBuffer = nil
+								xsvCanContinue <- true // ClientSide
 							}
 
 							isFirstPacket = false
@@ -121,7 +120,7 @@ func SegaroRead(reader buf.Reader, writer buf.Writer, timer *signal.ActivityTime
 							if err := sendMultipleFakePacket(authKey, &conn, nil, clientTime, minServerRandSize, maxServerRandSize, minServerRandCount, maxServerRandCount, true); err != nil {
 								return err
 							}
-							xsvCanContinue <- true
+							xsvCanContinue <- true // ServerSide
 						}
 					}
 

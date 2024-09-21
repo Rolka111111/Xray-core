@@ -78,16 +78,16 @@ func generatePadding(paddingBuffer []byte) {
 }
 
 func SegaroRemovePadding(chunks buf.MultiBuffer, paddingSize, subChunkSize int) *buf.Buffer {
-	originalBuffer := buf.New()
+	originalBytes := []byte{}
 	for _, chunk := range chunks {
 		originalChunk := removePadding(chunk, paddingSize, subChunkSize)
-		originalBuffer.Write(originalChunk.Bytes())
+		originalBytes = append(originalBytes, originalChunk.Bytes()...)
 
 		// Free the memory
 		originalChunk.Release()
 		originalChunk = nil
 	}
-	return originalBuffer
+	return buf.FromBytes(originalBytes)
 }
 
 func removePadding(paddedChunk *buf.Buffer, paddingSize, subChunkSize int) *buf.Buffer {

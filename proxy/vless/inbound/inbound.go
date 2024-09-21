@@ -477,6 +477,8 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 
 	var input *bytes.Reader
 	var rawInput *bytes.Buffer
+	var xsvCanContinue chan bool
+
 	switch requestAddons.Flow {
 	case vless.XRV:
 		if account.Flow == requestAddons.Flow {
@@ -511,6 +513,7 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 		}
 	case vless.XSV:
 		inbound.CanSpliceCopy = 3
+		xsvCanContinue = make(chan bool, 1)
 	case "":
 		inbound.CanSpliceCopy = 3
 		if account.Flow == vless.XRV && (request.Command == protocol.RequestCommandTCP || isMuxAndNotXUDP(request, first)) {
@@ -546,7 +549,6 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 	serverReader := link.Reader // .(*pipe.Reader)
 	serverWriter := link.Writer // .(*pipe.Writer)
 	trafficState := proxy.NewTrafficState(account.ID.Bytes())
-	xsvCanContinue := make(chan bool, 1)
 
 	postRequest := func() error {
 		defer timer.SetTimeout(sessionPolicy.Timeouts.DownlinkOnly)
@@ -612,7 +614,7 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 		case vless.XRV:
 			err = encoding.XtlsWrite(serverReader, clientWriter, timer, connection, trafficState, nil, ctx)
 		case vless.XSV:
-			err = segaro.SegaroWrite(serverReader, clientWriter, timer, connection, true, segaroConfig)
+			err = segaro.SegaroWrite(serverReader, clientWriter, timer, connection, true, segaroConfig, nil)
 		default:
 			// from serverReader.ReadMultiBuffer to clientWriter.WriteMultiBuffer
 			err = buf.Copy(serverReader, clientWriter, buf.UpdateActivity(timer))

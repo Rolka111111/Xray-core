@@ -517,3 +517,158 @@ func TestVlessXtlsVisionReality(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestVlessTcpXtlsSegaroVisionReality(t *testing.T) {
+	tcpServer := tcp.Server{
+		MsgProcessor: xor,
+	}
+	dest, err := tcpServer.Start()
+	common.Must(err)
+	defer tcpServer.Close()
+
+	userID := protocol.NewID(uuid.New())
+	serverPort := tcp.PickPort()
+	privateKey, _ := base64.RawURLEncoding.DecodeString("aGSYystUbf59_9_6LKRxD27rmSW_-2_nyd9YG_Gwbks")
+	publicKey, _ := base64.RawURLEncoding.DecodeString("E59WjnvZcQMu7tR7_BgyhycuEdBS-CtKxfImRCdAvFM")
+	shortIds := make([][]byte, 1)
+	shortIds[0] = make([]byte, 8)
+	hex.Decode(shortIds[0], []byte("0123456789abcdef"))
+	serverConfig := &core.Config{
+		App: []*serial.TypedMessage{
+			serial.ToTypedMessage(&log.Config{
+				ErrorLogLevel: clog.Severity_Debug,
+				ErrorLogType:  log.LogType_Console,
+			}),
+		},
+		Inbound: []*core.InboundHandlerConfig{
+			{
+				ReceiverSettings: serial.ToTypedMessage(&proxyman.ReceiverConfig{
+					PortList: &net.PortList{Range: []*net.PortRange{net.SinglePortRange(serverPort)}},
+					Listen:   net.NewIPOrDomain(net.LocalHostIP),
+					StreamSettings: &internet.StreamConfig{
+						Protocol:     internet.TransportProtocol_TCP,
+						SecurityType: serial.GetMessageType(&reality.Config{}),
+						SecuritySettings: []*serial.TypedMessage{
+							serial.ToTypedMessage(&reality.Config{
+								Show: true,
+								Dest: "www.google.com:443", // use google for now, may fail in some region
+								ServerNames: []string{"www.google.com"},
+								PrivateKey: privateKey,
+								ShortIds: shortIds,
+								Type: "tcp",
+								ServerRandPacket: "300-1800",
+								ClientRandPacket: "60-250",
+								ServerRandPacketCount: "1-5",
+								ClientRandPacketCount: "1-2",
+								SplitPacket: "300-800",
+								PaddingSize: 5,
+								SubchunkSize: 12,
+							}),
+						},
+					},
+				}),
+				ProxySettings: serial.ToTypedMessage(&inbound.Config{
+					Clients: []*protocol.User{
+						{
+							Account: serial.ToTypedMessage(&vless.Account{
+								Id:   userID.String(),
+								Flow: vless.XSV,
+							}),
+						},
+					},
+				}),
+			},
+		},
+		Outbound: []*core.OutboundHandlerConfig{
+			{
+				ProxySettings: serial.ToTypedMessage(&freedom.Config{}),
+			},
+		},
+	}
+
+	clientPort := tcp.PickPort()
+	clientConfig := &core.Config{
+		App: []*serial.TypedMessage{
+			serial.ToTypedMessage(&log.Config{
+				ErrorLogLevel: clog.Severity_Debug,
+				ErrorLogType:  log.LogType_Console,
+			}),
+		},
+		Inbound: []*core.InboundHandlerConfig{
+			{
+				ReceiverSettings: serial.ToTypedMessage(&proxyman.ReceiverConfig{
+					PortList: &net.PortList{Range: []*net.PortRange{net.SinglePortRange(clientPort)}},
+					Listen:   net.NewIPOrDomain(net.LocalHostIP),
+				}),
+				ProxySettings: serial.ToTypedMessage(&dokodemo.Config{
+					Address: net.NewIPOrDomain(dest.Address),
+					Port:    uint32(dest.Port),
+					NetworkList: &net.NetworkList{
+						Network: []net.Network{net.Network_TCP},
+					},
+				}),
+			},
+		},
+		Outbound: []*core.OutboundHandlerConfig{
+			{
+				ProxySettings: serial.ToTypedMessage(&outbound.Config{
+					Vnext: []*protocol.ServerEndpoint{
+						{
+							Address: net.NewIPOrDomain(net.LocalHostIP),
+							Port:    uint32(serverPort),
+							User: []*protocol.User{
+								{
+									Account: serial.ToTypedMessage(&vless.Account{
+										Id:   userID.String(),
+										Flow: vless.XSV,
+									}),
+								},
+							},
+						},
+					},
+				}),
+				SenderSettings: serial.ToTypedMessage(&proxyman.SenderConfig{
+					StreamSettings: &internet.StreamConfig{
+						Protocol: internet.TransportProtocol_TCP,
+						TransportSettings: []*internet.TransportConfig{
+							{
+								Protocol: internet.TransportProtocol_TCP,
+								Settings: serial.ToTypedMessage(&transtcp.Config{}),
+							},
+						},
+						SecurityType: serial.GetMessageType(&reality.Config{}),
+						SecuritySettings: []*serial.TypedMessage{
+							serial.ToTypedMessage(&reality.Config{
+								Show: true,
+								Fingerprint: "chrome",
+								ServerName: "www.google.com",
+								PublicKey: publicKey,
+								ShortId: shortIds[0],
+								SpiderX: "/",
+								ServerRandPacket: "300-1800",
+								ClientRandPacket: "60-250",
+								ServerRandPacketCount: "1-5",
+								ClientRandPacketCount: "1-2",
+								SplitPacket: "300-800",
+								PaddingSize: 5,
+								SubchunkSize: 12,
+							}),
+						},
+					},
+				}),
+			},
+		},
+	}
+
+	servers, err := InitializeServerConfigs(serverConfig, clientConfig)
+	common.Must(err)
+	defer CloseAllServers(servers)
+
+	var errg errgroup.Group
+	for i := 0; i < 1; i++ {
+		errg.Go(testTCPConn(clientPort, 1024*1024, time.Second*30))
+	}
+	if err := errg.Wait(); err != nil {
+		t.Error(err)
+	}
+}
