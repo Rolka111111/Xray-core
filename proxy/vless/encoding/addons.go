@@ -64,7 +64,7 @@ func DecodeHeaderAddons(buffer *buf.Buffer, reader io.Reader) (*Addons, error) {
 
 // EncodeBodyAddons returns a Writer that auto-encrypt content written by caller.
 func EncodeBodyAddons(writer io.Writer, request *protocol.RequestHeader, requestAddons *Addons, state *proxy.TrafficState, context context.Context, segaroConfig *segaro.SegaroConfig, conn net.Conn) buf.Writer {
-	if request.Command == protocol.RequestCommandUDP {
+	if request.Command == protocol.RequestCommandUDP && requestAddons.Flow != vless.XSV {
 		return NewMultiLengthPacketWriter(writer.(buf.Writer))
 	}
 	w := buf.NewWriter(writer)
@@ -79,11 +79,8 @@ func EncodeBodyAddons(writer io.Writer, request *protocol.RequestHeader, request
 
 // DecodeBodyAddons returns a Reader from which caller can fetch decrypted body.
 func DecodeBodyAddons(reader io.Reader, request *protocol.RequestHeader, addons *Addons) buf.Reader {
-	switch addons.Flow {
-	default:
-		if request.Command == protocol.RequestCommandUDP {
-			return NewLengthPacketReader(reader)
-		}
+	if request.Command == protocol.RequestCommandUDP && addons.Flow != vless.XSV {
+		return NewLengthPacketReader(reader)
 	}
 	return buf.NewReader(reader)
 }

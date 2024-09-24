@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	gotls "crypto/tls"
+	"encoding/binary"
 	"io"
 	"reflect"
 	"strconv"
@@ -220,7 +221,15 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 		if err != nil {
 			storeStartPosition := first.GetStart()
 			first.ResetStart()
-			first.Advance(4) // Skip chunk header
+			// Skip packet length
+			first.Advance(2)
+
+			// Skip fake padding length
+			first.Advance(int32(binary.BigEndian.Uint16(first.BytesTo(2))) + 2)
+
+			// Skip chunk length
+			first.Advance(2)
+
 			var realityConfig *goReality.Config
 			realityConfig, err = segaro.GetRealityServerConfig(&inbound.Conn)
 			if err != nil {
@@ -231,7 +240,7 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 			subChunkSize := int(segaroConfig.GetSubChunkSize())
 
 			decodedBuff := segaro.SegaroRemovePadding(buf.MultiBuffer{first}, paddingSize, subChunkSize)
-			
+
 			decodedBuff.Advance(2) // Skip requestHeader content-length
 			request, requestAddons, isfb, err = encoding.DecodeRequestHeader(isfb, decodedBuff, decodedBuff, h.validator)
 			first.ResetStart()
@@ -596,7 +605,7 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 		}
 		switch requestAddons.Flow {
 		case vless.XSV:
-			if canContinue := <- xsvCanContinue; !canContinue{
+			if canContinue := <-xsvCanContinue; !canContinue {
 				return errors.New("close conn received from xsv.SegaroRead")
 			}
 		}

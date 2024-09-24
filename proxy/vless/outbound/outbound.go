@@ -10,7 +10,6 @@ import (
 	"time"
 	"unsafe"
 
-	utls "github.com/refraction-networking/utls"
 	proxymanOutbound "github.com/luckyluke-a/xray-core/app/proxyman/outbound"
 	"github.com/luckyluke-a/xray-core/common"
 	"github.com/luckyluke-a/xray-core/common/buf"
@@ -33,6 +32,7 @@ import (
 	"github.com/luckyluke-a/xray-core/transport/internet/reality/segaro"
 	"github.com/luckyluke-a/xray-core/transport/internet/stat"
 	"github.com/luckyluke-a/xray-core/transport/internet/tls"
+	utls "github.com/refraction-networking/utls"
 )
 
 func init() {
@@ -163,18 +163,28 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 			input = (*bytes.Reader)(unsafe.Pointer(p + i.Offset))
 			rawInput = (*bytes.Buffer)(unsafe.Pointer(p + r.Offset))
 		}
+	case vless.XSV + "-udp443":
+		allowUDP443 = true
+		requestAddons.Flow = requestAddons.Flow[:18]
+		fallthrough
 	case vless.XSV:
 		ob.CanSpliceCopy = 3
+		switch request.Command {
+		case protocol.RequestCommandUDP:
+			if !allowUDP443 && request.Port == 443 {
+				return errors.New("XTLS rejected UDP/443 traffic").AtInfo()
+			}
+		}
 		outboundHandler, ok := dialer.(*proxymanOutbound.Handler)
-		if !ok{
+		if !ok {
 			return errors.New("failed to get reality proxymanOutbound.Handler")
 		}
 		streamSettings, err := segaro.GetPrivateField(outboundHandler, "streamSettings")
-		if err != nil{
+		if err != nil {
 			return errors.New("failed to get reality streamSettings")
 		}
 		memoryStreamConfig, ok := streamSettings.(*internet.MemoryStreamConfig)
-		if !ok{
+		if !ok {
 			return errors.New("failed to get reality memoryStreamConfig")
 		}
 		realityConfig := reality.ConfigFromStreamSettings(memoryStreamConfig)
@@ -240,7 +250,7 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 				if err := serverWriter.WriteMultiBuffer(mb); err != nil {
 					return err // ...
 				}
-			}else if requestAddons.Flow == vless.XSV{
+			} else if requestAddons.Flow == vless.XSV {
 				mb := buf.MultiBuffer{buf.New()}
 				serverWriter.WriteMultiBuffer(mb)
 			}
@@ -253,7 +263,8 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 		}
 
 		var err error
-		if requestAddons.Flow == vless.XRV || requestAddons.Flow == vless.XSV{
+		switch requestAddons.Flow {
+		case vless.XRV:
 			if tlsConn, ok := iConn.(*tls.Conn); ok {
 				if tlsConn.ConnectionState().Version != gotls.VersionTLS13 {
 					return errors.New(`failed to use `+requestAddons.Flow+`, found outer tls version `, tlsConn.ConnectionState().Version).AtWarning()
@@ -263,14 +274,11 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 					return errors.New(`failed to use `+requestAddons.Flow+`, found outer tls version `, utlsConn.ConnectionState().Version).AtWarning()
 				}
 			}
-			switch requestAddons.Flow {
-			case vless.XRV:
-				ctx1 := session.ContextWithInbound(ctx, nil) // TODO enable splice
-				err = encoding.XtlsWrite(clientReader, serverWriter, timer, conn, trafficState, ob, ctx1)
-			case vless.XSV:
-				err = segaro.SegaroWrite(clientReader, serverWriter, timer, conn, false, segaroConfig, xsvCanContinue)
-			}
-		} else {
+			ctx1 := session.ContextWithInbound(ctx, nil) // TODO enable splice
+			err = encoding.XtlsWrite(clientReader, serverWriter, timer, conn, trafficState, ob, ctx1)
+		case vless.XSV:
+			err = segaro.SegaroWrite(clientReader, serverWriter, timer, conn, false, segaroConfig, xsvCanContinue)
+		default:
 			// from clientReader.ReadMultiBuffer to serverWriter.WriteMultiBuffer
 			err = buf.Copy(clientReader, serverWriter, buf.UpdateActivity(timer))
 		}
@@ -288,13 +296,13 @@ func (h *Handler) Process(ctx context.Context, link *transport.Link, dialer inte
 	getResponse := func() error {
 		defer timer.SetTimeout(sessionPolicy.Timeouts.UplinkOnly)
 
-		responseAddons, err := encoding.DecodeResponseHeader(conn, request)
-		if err != nil {
+		var err error
+		if _, err = encoding.DecodeResponseHeader(conn, request); err != nil {
 			return errors.New("failed to decode response header").Base(err).AtInfo()
 		}
 
 		// default: serverReader := buf.NewReader(conn)
-		serverReader := encoding.DecodeBodyAddons(conn, request, responseAddons)
+		serverReader := encoding.DecodeBodyAddons(conn, request, requestAddons)
 
 		switch requestAddons.Flow {
 		case vless.XRV:

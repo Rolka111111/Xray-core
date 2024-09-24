@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net"
-
+	"math/rand"
 	"github.com/luckyluke-a/xray-core/common/buf"
 	"github.com/luckyluke-a/xray-core/common/errors"
 	"github.com/luckyluke-a/xray-core/common/signal"
@@ -115,6 +115,23 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 					// Add meta-data at the first of each chunk
 					for _, chunk := range cacheBuffer {
 						chunk.WriteAtBeginning([]byte{byte(chunk.Len() >> 8), byte(chunk.Len())})
+					}
+
+					if int(cacheBuffer[0].Len()) < minSplitSize{
+						// Use the long padding, to hide the first packet real length
+						paddingLength := rand.Intn(maxSplitSize-minSplitSize+1) + minSplitSize
+						var paddingBytes []byte
+						if paddingLength + int(cacheBuffer[0].Len()) > maxSplitSize{
+							paddingBytes = make([]byte, paddingLength - int(cacheBuffer[0].Len()))
+						}else{
+							paddingBytes = make([]byte, paddingLength)
+						}
+						generatePadding(paddingBytes)
+						cacheBuffer[0].WriteAtBeginning(paddingBytes)
+						cacheBuffer[0].WriteAtBeginning([]byte{byte(len(paddingBytes) >> 8), byte(len(paddingBytes))})
+						paddingBytes = nil
+					}else{
+						cacheBuffer[0].WriteAtBeginning([]byte{0, 0})
 					}
 					cacheBuffer[0].WriteAtBeginning([]byte{byte(cacheBuffer.Len() >> 8), byte(cacheBuffer.Len())})
 				} else {
