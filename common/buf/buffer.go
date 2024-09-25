@@ -242,7 +242,7 @@ func (b *Buffer) WriteAtBeginning(data []byte) (int, error) {
 		return 0, nil
 	}
 	if int32(dataLen) > int32(len(b.v))-b.end {
-		return 0, errors.New("not enough space in buffer")
+		return 0, errors.New("WriteAtBeginning, not enough space in buffer")
 	}
 	if b.end > 0 {
 		copy(b.v[dataLen:], b.v[:b.end])

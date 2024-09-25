@@ -75,7 +75,7 @@ func SegaroRead(reader buf.Reader, writer buf.Writer, timer *signal.ActivityTime
 							isFirstChunk = false
 							totalLength = binary.BigEndian.Uint16(b.BytesTo(2))
 							b.Advance(2) // Skip total length
-							if fromInbound{
+							if fromInbound {
 								fakePaddingLength := binary.BigEndian.Uint16(b.BytesTo(2)) + 2
 								b.Advance(int32(fakePaddingLength)) // Skip fake padding
 								totalLength -= fakePaddingLength

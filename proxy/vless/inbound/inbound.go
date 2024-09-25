@@ -221,14 +221,36 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 		if err != nil {
 			storeStartPosition := first.GetStart()
 			first.ResetStart()
+
 			// Skip packet length
 			first.Advance(2)
 
-			// Skip fake padding length
-			first.Advance(int32(binary.BigEndian.Uint16(first.BytesTo(2))) + 2)
+			// Skip fake padding
+			fakePaddingLength := int32(binary.BigEndian.Uint16(first.BytesTo(2)))
+			first.Advance(2)
+			if fakePaddingLength > first.Len() {
+				// Not enough data received, get more...
+				if err := connection.SetReadDeadline(time.Now().Add(sessionPolicy.Timeouts.Handshake)); err != nil {
+					return errors.New("unable to set read deadline").Base(err).AtWarning()
+				}
+				if _, err := first.ReadFullFrom(connection, (fakePaddingLength-first.Len())+2); err != nil {
+					return err
+				}
+			}
+			first.Advance(fakePaddingLength)
 
 			// Skip chunk length
+			chunkLength := int32(binary.BigEndian.Uint16(first.BytesTo(2)))
 			first.Advance(2)
+			if chunkLength > first.Len() {
+				// Not enough data received, get more...
+				if err := connection.SetReadDeadline(time.Now().Add(sessionPolicy.Timeouts.Handshake)); err != nil {
+					return errors.New("unable to set read deadline").Base(err).AtWarning()
+				}
+				if _, err := first.ReadFullFrom(connection, chunkLength-first.Len()); err != nil {
+					return err
+				}
+			}
 
 			var realityConfig *goReality.Config
 			realityConfig, err = segaro.GetRealityServerConfig(&inbound.Conn)
@@ -241,7 +263,7 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 
 			decodedBuff := segaro.SegaroRemovePadding(buf.MultiBuffer{first}, paddingSize, subChunkSize)
 
-			decodedBuff.Advance(2) // Skip requestHeader content-length
+			decodedBuff.Advance(2) // Skip requestHeader length
 			request, requestAddons, isfb, err = encoding.DecodeRequestHeader(isfb, decodedBuff, decodedBuff, h.validator)
 			first.ResetStart()
 			if err != nil {

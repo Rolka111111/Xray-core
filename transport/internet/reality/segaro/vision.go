@@ -185,20 +185,26 @@ func sendMultipleFakePacket(authKey []byte, useConn *net.Conn, useWriter *buf.Wr
 		generateRandomPacket(fakePacketBuff, authKey, timeInterval, randLength, clientTime)
 
 		// Add fake packet length to the first of it
-		fakePacketBuff.WriteAtBeginning([]byte{byte(fakePacketBuff.Len() >> 8), byte(fakePacketBuff.Len())})
+		if _, err := fakePacketBuff.WriteAtBeginning([]byte{byte(fakePacketBuff.Len() >> 8), byte(fakePacketBuff.Len())}); err != nil {
+			return err
+		}
 
 		// Add to multibuffer
 		fakePackets = append(fakePackets, fakePacketBuff)
 	}
 
 	// Add all fake packets length to the first packet
-	fakePackets[0].WriteAtBeginning([]byte{byte(fakePackets.Len() >> 8), byte(fakePackets.Len())})
+	if _, err := fakePackets[0].WriteAtBeginning([]byte{byte(fakePackets.Len() >> 8), byte(fakePackets.Len())}); err != nil {
+		return err
+	}
 
 	if sendHeader {
-		fakePackets[0].WriteAtBeginning([]byte{
+		if _, err := fakePackets[0].WriteAtBeginning([]byte{
 			0, // Vless header request version
 			0, // Vless header vision
-		})
+		}); err != nil {
+			return err
+		}
 	}
 
 	if useWriter != nil {

@@ -3,8 +3,9 @@ package segaro
 import (
 	"bytes"
 	"io"
-	"net"
 	"math/rand"
+	"net"
+
 	"github.com/luckyluke-a/xray-core/common/buf"
 	"github.com/luckyluke-a/xray-core/common/errors"
 	"github.com/luckyluke-a/xray-core/common/signal"
@@ -33,18 +34,18 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 	// The `if` section, only call onetime, at the first packet sent by client and server.
 	if !w.initCall {
 		w.initCall = true
-		serverSide := false
 
 		minSplitSize, maxSplitSize := w.segaroConfig.GetSplitSize()
 		paddingSize := int(w.segaroConfig.GetPaddingSize())
 		subChunkSize := int(w.segaroConfig.GetSubChunkSize())
 
-		var cacheBuffer buf.MultiBuffer
-
 		writer, ok := w.Writer.(*buf.BufferedWriter)
 		if !ok {
 			return errors.New("failed to get buf.BufferedWriter")
 		}
+
+		serverSide := false
+		var cacheBuffer buf.MultiBuffer
 
 		// Get request header (command, userID and...)
 		requestHeader := writer.GetBuffer().Bytes()
@@ -80,9 +81,13 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 				// Add meta-data at the first of each chunk
 				for _, chunk := range cacheBuffer {
 					// Write chunk length
-					chunk.WriteAtBeginning([]byte{byte(chunk.Len() >> 8), byte(chunk.Len())})
+					if _, err := chunk.WriteAtBeginning([]byte{byte(chunk.Len() >> 8), byte(chunk.Len())}); err != nil {
+						return err
+					}
 				}
-				cacheBuffer[0].WriteAtBeginning([]byte{byte(cacheBuffer.Len() >> 8), byte(cacheBuffer.Len())})
+				if _, err := cacheBuffer[0].WriteAtBeginning([]byte{byte(cacheBuffer.Len() >> 8), byte(cacheBuffer.Len())}); err != nil {
+					return err
+				}
 
 				if err := w.Writer.WriteMultiBuffer(cacheBuffer); err != nil {
 					return err
@@ -114,37 +119,51 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 
 					// Add meta-data at the first of each chunk
 					for _, chunk := range cacheBuffer {
-						chunk.WriteAtBeginning([]byte{byte(chunk.Len() >> 8), byte(chunk.Len())})
+						if _, err := chunk.WriteAtBeginning([]byte{
+							byte(chunk.Len() >> 8),
+							byte(chunk.Len()),
+						},
+						); err != nil {
+							return err
+						}
 					}
 
-					if int(cacheBuffer[0].Len()) < minSplitSize{
+					if int(cacheBuffer[0].Len()) < minSplitSize {
 						// Use the long padding, to hide the first packet real length
 						paddingLength := rand.Intn(maxSplitSize-minSplitSize+1) + minSplitSize
 						var paddingBytes []byte
-						if paddingLength + int(cacheBuffer[0].Len()) > maxSplitSize{
-							paddingBytes = make([]byte, paddingLength - int(cacheBuffer[0].Len()))
-						}else{
+						if paddingLength+int(cacheBuffer[0].Len()) > maxSplitSize {
+							paddingBytes = make([]byte, paddingLength-int(cacheBuffer[0].Len()))
+						} else {
 							paddingBytes = make([]byte, paddingLength)
 						}
 						generatePadding(paddingBytes)
-						cacheBuffer[0].WriteAtBeginning(paddingBytes)
-						cacheBuffer[0].WriteAtBeginning([]byte{byte(len(paddingBytes) >> 8), byte(len(paddingBytes))})
+						if _, err := cacheBuffer[0].WriteAtBeginning(paddingBytes); err != nil {
+							return err
+						}
+						if _, err := cacheBuffer[0].WriteAtBeginning([]byte{byte(len(paddingBytes) >> 8), byte(len(paddingBytes))}); err != nil {
+							return err
+						}
 						paddingBytes = nil
-					}else{
-						cacheBuffer[0].WriteAtBeginning([]byte{0, 0})
+					} else {
+						if _, err := cacheBuffer[0].WriteAtBeginning([]byte{0, 0}); err != nil {
+							return err
+						}
 					}
-					cacheBuffer[0].WriteAtBeginning([]byte{byte(cacheBuffer.Len() >> 8), byte(cacheBuffer.Len())})
+					if _, err := cacheBuffer[0].WriteAtBeginning([]byte{byte(cacheBuffer.Len() >> 8), byte(cacheBuffer.Len())}); err != nil {
+						return err
+					}
 				} else {
 					cacheBuffer = buf.MultiBuffer{b}
 				}
 
-				if i == 0{
+				if i == 0 {
 					if err := w.Writer.WriteMultiBuffer(buf.MultiBuffer{cacheBuffer[0]}); err != nil {
 						return err
 					}
 					cacheBuffer = cacheBuffer[1:]
 				}
-				
+
 				// Add other chunks to cacheBuffer, if exist
 				if len(cacheBuffer) > 0 {
 					w.trafficState.CacheBuffer = append(w.trafficState.CacheBuffer, cacheBuffer)
@@ -162,7 +181,7 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 func SegaroWrite(reader buf.Reader, writer buf.Writer, timer signal.ActivityUpdater, conn net.Conn, fromInbound bool, segaroConfig *SegaroConfig, xsvCanContinue chan bool) error {
 	if xsvCanContinue != nil {
 		if canContinue := <-xsvCanContinue; !canContinue {
-			return errors.New("close conn received from xsv.SegaroWrite")
+			return errors.New("close conn received from xsv.SegaroRead")
 		}
 	}
 	minSplitSize, maxSplitSize := segaroConfig.GetSplitSize()
@@ -193,9 +212,13 @@ func SegaroWrite(reader buf.Reader, writer buf.Writer, timer signal.ActivityUpda
 
 						// Add meta-data at the first of each chunk
 						for _, chunk := range newBuff {
-							chunk.WriteAtBeginning([]byte{byte(chunk.Len() >> 8), byte(chunk.Len())})
+							if _, err := chunk.WriteAtBeginning([]byte{byte(chunk.Len() >> 8), byte(chunk.Len())}); err != nil {
+								return err
+							}
 						}
-						newBuff[0].WriteAtBeginning([]byte{byte(newBuff.Len() >> 8), byte(newBuff.Len())})
+						if _, err := newBuff[0].WriteAtBeginning([]byte{byte(newBuff.Len() >> 8), byte(newBuff.Len())}); err != nil {
+							return err
+						}
 						if err = writer.WriteMultiBuffer(newBuff); err != nil {
 							return err
 						}
