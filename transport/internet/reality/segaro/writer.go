@@ -38,7 +38,9 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 		minSplitSize, maxSplitSize := w.segaroConfig.GetSplitSize()
 		paddingSize := int(w.segaroConfig.GetPaddingSize())
 		subChunkSize := int(w.segaroConfig.GetSubChunkSize())
-
+		if maxSplitSize == 0 || paddingSize == 0 || subChunkSize == 0 {
+			return errors.New("flow params can not be zero")
+		}
 		writer, ok := w.Writer.(*buf.BufferedWriter)
 		if !ok {
 			return errors.New("failed to get buf.BufferedWriter")
@@ -99,9 +101,6 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 			}
 		} else {
 			// Client side
-			if maxSplitSize == 0 || paddingSize == 0 || subChunkSize == 0 {
-				return errors.New("flow params can not be zero")
-			}
 			for i, b := range mb {
 				if i == 0 || (b.Len() > 2 && isHandshakeMessage(b.BytesTo(3))) {
 					newTempBuff := []byte{}

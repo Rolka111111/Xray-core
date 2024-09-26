@@ -233,13 +233,22 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 				if err := connection.SetReadDeadline(time.Now().Add(sessionPolicy.Timeouts.Handshake)); err != nil {
 					return errors.New("unable to set read deadline").Base(err).AtWarning()
 				}
-				if _, err := first.ReadFullFrom(connection, (fakePaddingLength-first.Len())+2); err != nil {
+				if _, err := first.ReadFullFrom(connection, fakePaddingLength-first.Len()); err != nil {
 					return err
 				}
 			}
 			first.Advance(fakePaddingLength)
 
 			// Skip chunk length
+			if 2 > first.Len() {
+				// Not enough data received, get more...
+				if err := connection.SetReadDeadline(time.Now().Add(sessionPolicy.Timeouts.Handshake)); err != nil {
+					return errors.New("unable to set read deadline").Base(err).AtWarning()
+				}
+				if _, err := first.ReadFullFrom(connection, 2-first.Len()); err != nil {
+					return err
+				}
+			}
 			chunkLength := int32(binary.BigEndian.Uint16(first.BytesTo(2)))
 			first.Advance(2)
 			if chunkLength > first.Len() {
