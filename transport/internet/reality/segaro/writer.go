@@ -127,26 +127,28 @@ func (w *SegaroWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 						}
 					}
 
-					if int(cacheBuffer[0].Len()) < minSplitSize {
-						// Use the long padding, to hide the first packet real length
-						paddingLength := rand.Intn(maxSplitSize-minSplitSize+1) + minSplitSize
-						var paddingBytes []byte
-						if paddingLength+int(cacheBuffer[0].Len()) > maxSplitSize {
-							paddingBytes = make([]byte, paddingLength-int(cacheBuffer[0].Len()))
+					if i == 0{
+						if int(cacheBuffer[0].Len()) < minSplitSize {
+							// Use the long padding, to hide the first packet real length
+							paddingLength := rand.Intn(maxSplitSize-minSplitSize+1) + minSplitSize
+							var paddingBytes []byte
+							if paddingLength+int(cacheBuffer[0].Len()) > maxSplitSize {
+								paddingBytes = make([]byte, paddingLength-int(cacheBuffer[0].Len()))
+							} else {
+								paddingBytes = make([]byte, paddingLength)
+							}
+							generatePadding(paddingBytes)
+							if _, err := cacheBuffer[0].WriteAtBeginning(paddingBytes); err != nil {
+								return err
+							}
+							if _, err := cacheBuffer[0].WriteAtBeginning([]byte{byte(len(paddingBytes) >> 8), byte(len(paddingBytes))}); err != nil {
+								return err
+							}
+							paddingBytes = nil
 						} else {
-							paddingBytes = make([]byte, paddingLength)
-						}
-						generatePadding(paddingBytes)
-						if _, err := cacheBuffer[0].WriteAtBeginning(paddingBytes); err != nil {
-							return err
-						}
-						if _, err := cacheBuffer[0].WriteAtBeginning([]byte{byte(len(paddingBytes) >> 8), byte(len(paddingBytes))}); err != nil {
-							return err
-						}
-						paddingBytes = nil
-					} else {
-						if _, err := cacheBuffer[0].WriteAtBeginning([]byte{0, 0}); err != nil {
-							return err
+							if _, err := cacheBuffer[0].WriteAtBeginning([]byte{0, 0}); err != nil {
+								return err
+							}
 						}
 					}
 					if _, err := cacheBuffer[0].WriteAtBeginning([]byte{byte(cacheBuffer.Len() >> 8), byte(cacheBuffer.Len())}); err != nil {
