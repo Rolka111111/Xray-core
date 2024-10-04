@@ -182,7 +182,7 @@ func readFullBuffer(b *buf.Buffer, cacheMultiBuffer *buf.MultiBuffer, totalLengt
 
 	if *totalLength != 0 {
 		canRead = true
-	} else if isHandshakeMessage(b.BytesRange(int32(paddingSize)+4, int32(paddingSize)+7)) {
+	} else if b.Len() >= int32(paddingSize)+7 && isHandshakeMessage(b.BytesRange(int32(paddingSize)+4, int32(paddingSize)+7)) {
 		*totalLength = binary.BigEndian.Uint16(b.BytesTo(2))
 		b.Advance(2) // Skip total length bytes
 		canRead = true
