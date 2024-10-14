@@ -1,6 +1,6 @@
 package outbound
 
-//go:generate go run github.com/luckyluke-a/xray-core/common/errors/errorgen
+//go:generate go run github.com/Rolka111111/xray-core/common/errors/errorgen
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"time"
 	"unsafe"
 
-	proxymanOutbound "github.com/luckyluke-a/xray-core/app/proxyman/outbound"
+	proxymanOutbound "github.com/Rolka111111/xray-core/app/proxyman/outbound"
 	"github.com/luckyluke-a/xray-core/common"
 	"github.com/luckyluke-a/xray-core/common/buf"
 	"github.com/luckyluke-a/xray-core/common/errors"
