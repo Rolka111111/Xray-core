@@ -8,11 +8,11 @@ import (
 	"time"
 
 	utls "github.com/refraction-networking/utls"
-	"github.com/luckyluke-a/xray-core/common/buf"
-	"github.com/luckyluke-a/xray-core/common/net"
+	"github.com/Rolka111111/xray-core/common/buf"
+	"github.com/Rolka111111/xray-core/common/net"
 )
 
-//go:generate go run github.com/luckyluke-a/xray-core/common/errors/errorgen
+//go:generate go run github.com/Rolka111111/xray-core/common/errors/errorgen
 
 type Interface interface {
 	net.Conn
