@@ -1,9 +1,9 @@
-module github.com/luckyluke-a/xray-core
+module github.com/Rolka111111/xray-core
 
 go 1.21.4
 
 require (
-	github.com/LuckyLuke-a/reality v0.0.0-20240916112156-8cb1c9915b7a
+	github.com/Rolka111111/reality v0.0.0-20240916112156-8cb1c9915b7a
 	github.com/OmarTariq612/goech v0.0.0-20240405204721-8e2e1dafd3a0
 	github.com/cloudflare/circl v1.4.0
 	github.com/ghodss/yaml v1.0.1-0.20220118164431-d8423dcdf344
