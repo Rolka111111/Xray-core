@@ -8,14 +8,14 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/luckyluke-a/xray-core/common/errors"
-	"github.com/luckyluke-a/xray-core/common/net"
-	"github.com/luckyluke-a/xray-core/common/protocol"
-	"github.com/luckyluke-a/xray-core/common/serial"
-	"github.com/luckyluke-a/xray-core/common/uuid"
-	"github.com/luckyluke-a/xray-core/proxy/vless"
-	"github.com/luckyluke-a/xray-core/proxy/vless/inbound"
-	"github.com/luckyluke-a/xray-core/proxy/vless/outbound"
+	"github.com/Rolka111111/xray-core/common/errors"
+	"github.com/Rolka111111/xray-core/common/net"
+	"github.com/Rolka111111/xray-core/common/protocol"
+	"github.com/Rolka111111/xray-core/common/serial"
+	"github.com/Rolka111111/xray-core/common/uuid"
+	"github.com/Rolka111111/xray-core/proxy/vless"
+	"github.com/Rolka111111/xray-core/proxy/vless/inbound"
+	"github.com/Rolka111111/xray-core/proxy/vless/outbound"
 	"google.golang.org/protobuf/proto"
 )
 
