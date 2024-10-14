@@ -26,17 +26,17 @@ import (
 	"unsafe"
 
 	utls "github.com/refraction-networking/utls"
-	"github.com/LuckyLuke-a/reality"
-	"github.com/luckyluke-a/xray-core/common/errors"
-	"github.com/luckyluke-a/xray-core/common/net"
-	"github.com/luckyluke-a/xray-core/core"
-	"github.com/luckyluke-a/xray-core/transport/internet/tls"
+	"github.com/Rolka111111/reality"
+	"github.com/Rolka111111/xray-core/common/errors"
+	"github.com/Rolka111111/xray-core/common/net"
+	"github.com/Rolka111111/xray-core/core"
+	"github.com/Rolka111111/xray-core/transport/internet/tls"
 	"golang.org/x/crypto/chacha20poly1305"
 	"golang.org/x/crypto/hkdf"
 	"golang.org/x/net/http2"
 )
 
-//go:generate go run github.com/luckyluke-a/xray-core/common/errors/errorgen
+//go:generate go run github.com/Rolka111111/xray-core/common/errors/errorgen
 
 //go:linkname aesgcmPreferred github.com/refraction-networking/utls.aesgcmPreferred
 func aesgcmPreferred(ciphers []uint16) bool
