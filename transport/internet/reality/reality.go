@@ -25,7 +25,7 @@ import (
 	"time"
 	"unsafe"
 
-	utls "github.com/refraction-networking/utls"
+	utls "github.com/Rolka111111/utls"
 	"github.com/Rolka111111/reality"
 	"github.com/Rolka111111/xray-core/common/errors"
 	"github.com/Rolka111111/xray-core/common/net"
